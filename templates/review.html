@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>TriageGate — Review Queue</title>
+    <style>
+        body {
+            font-family: -apple-system, Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+            background: #f5f5f5;
+        }
+
+        h1 {
+            color: #1a1a1a;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .ticket-text {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .confidence {
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: #fff3cd;
+            color: #856404;
+            font-weight: 600;
+        }
+
+        .reasoning {
+            font-size: 14px;
+            color: #444;
+            font-style: italic;
+            margin-bottom: 16px;
+        }
+
+        .empty {
+            text-align: center;
+            color: #888;
+            padding: 60px 0;
+        }
+
+        button {
+            font-family: inherit;
+        }
+
+        label {
+            font-size: 13px;
+            color: #555;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Review Queue</h1>
+    {% if items|length == 0 %}
+    <div class="empty">No tickets pending review. 🎉</div>
+    {% endif %}
+    {% for item in items %}
+    <div class="card">
+        <div class="ticket-text">{{ item.ticket_text }}</div>
+        <div class="meta">
+            <span>Category: <strong>{{ item.category }}</strong></span>
+            <span>Priority: <strong>{{ item.priority }}</strong></span>
+            <span class="confidence">Confidence: {{ item.confidence }}</span>
+        </div>
+        <div class="reasoning">"{{ item.reasoning }}"</div>
+        <div>Suggested action: <strong>{{ item.suggested_action }}</strong></div>
+
+        <form method="post" action="/review/{{ item.id }}/approve" style="margin-top: 16px; display: inline;">
+            <button type="submit"
+                style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                ✓ Approve
+            </button>
+        </form>
+
+        <details style="margin-top: 12px;">
+            <summary style="cursor: pointer; color: #856404; font-weight: 600;">✎ Override instead</summary>
+            <form method="post" action="/review/{{ item.id }}/override"
+                style="margin-top: 12px; padding: 16px; background: #f9f9f9; border-radius: 6px;">
+                <div style="margin-bottom: 10px;">
+                    <label>Correct category:</label><br>
+                    <select name="category" style="padding: 6px; width: 200px;">
+                        <option value="billing" {% if item.category=="billing" %}selected{% endif %}>billing</option>
+                        <option value="technical" {% if item.category=="technical" %}selected{% endif %}>technical
+                        </option>
+                        <option value="account_access" {% if item.category=="account_access" %}selected{% endif %}>
+                            account_access</option>
+                        <option value="feature_request" {% if item.category=="feature_request" %}selected{% endif %}>
+                            feature_request</option>
+                        <option value="complaint" {% if item.category=="complaint" %}selected{% endif %}>complaint
+                        </option>
+                        <option value="other" {% if item.category=="other" %}selected{% endif %}>other</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label>Correct priority:</label><br>
+                    <select name="priority" style="padding: 6px; width: 200px;">
+                        <option value="low" {% if item.priority=="low" %}selected{% endif %}>low</option>
+                        <option value="medium" {% if item.priority=="medium" %}selected{% endif %}>medium</option>
+                        <option value="high" {% if item.priority=="high" %}selected{% endif %}>high</option>
+                        <option value="urgent" {% if item.priority=="urgent" %}selected{% endif %}>urgent</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label>Correct suggested action:</label><br>
+                    <input type="text" name="suggested_action" value="{{ item.suggested_action }}"
+                        style="padding: 6px; width: 300px;">
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <label>What was wrong? (for tracking recurring issues)</label><br>
+                    <select name="correction_type" style="padding: 6px; width: 200px;">
+                        <option value="category_corrected">Category was wrong</option>
+                        <option value="priority_corrected">Priority was wrong</option>
+                        <option value="action_corrected">Suggested action was wrong</option>
+                        <option value="confidence_miscalibrated">Confidence was miscalibrated</option>
+                        <option value="multiple">Multiple fields wrong</option>
+                    </select>
+                </div>
+                <button type="submit"
+                    style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    Submit Override
+                </button>
+            </form>
+        </details>
+    </div>
+    {% endfor %}
+</body>
+
+</html>

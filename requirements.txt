@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+groq
+supabase
+python-dotenv
+pytest
+httpx
+jinja2
+python-multipart
